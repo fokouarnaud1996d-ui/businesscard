@@ -1,8 +1,9 @@
 # 🎴 Business Card Generator
 
-> Générateur de cartes de visite professionnelles avec QR code - Gratuit, Simple, Puissant
+> **Générateur de cartes de visite minimalistes professionnelles** avec QR code intégré.  
+> Développé avec **Vue 3 + Tailwind CSS** | GitHub Pages | Zero-dependency ✨
 
-**▶️ [Demo en direct](https://fokouarnaud1996d-ui.github.io/businesscard/)**
+**▶️ [Lancer l'app](https://fokouarnaud1996d-ui.github.io/businesscard/)**
 
 ---
 
@@ -117,15 +118,24 @@ node src/tests/unit.test.js
 
 ---
 
-## 📖 Documentation
+## � Documentation complète
 
-### Pour les **Utilisateurs**
-👉 [Guide d'utilisation](./GUIDE_UTILISATEUR.md) *(bientôt)*
+| Document | Description |
+|----------|-------------|
+| **[QUICKSTART.md](./QUICKSTART.md)** | Guide d'utilisation rapide (2 min) |
+| **[ROADMAP.md](./ROADMAP.md)** | Futures features & timeline |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | Decisions tech & scalabilité |
+| **[CONCEPTION.md](./CONCEPTION.md)** | Design UX & specs |
 
-### Pour les **Développeurs**
-👉 [Document de conception](./CONCEPTION.md)  
-👉 [Architecture technique](./ARCHITECTURE.md) *(bientôt)*  
-👉 [Roadmap & Sprints](./ROADMAP.md) *(bientôt)*  
+---
+
+## 🎯 Quick Links
+
+- 🚀 [Lancer l'app](https://fokouarnaud1996d-ui.github.io/businesscard/)
+- 📖 [Débuter](./QUICKSTART.md) ← **Commencez ici!**
+- 🗺️ [Roadmap](./ROADMAP.md) ← Sprint 2,3,4 prévus
+- 💻 [Code Source](https://github.com/fokouarnaud1996d-ui/businesscard)
+- 🐛 [Signaler un bug](https://github.com/fokouarnaud1996d-ui/businesscard/issues)
 
 ---
 
