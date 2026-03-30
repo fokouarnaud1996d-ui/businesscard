@@ -254,6 +254,14 @@ const app = createApp({
       });
     },
 
+    calculateFontSize(name) {
+      const len = name.length;
+      if (len <= 10) return 100;
+      if (len <= 20) return 70;
+      if (len <= 35) return 50;
+      return 40;
+    },
+
     drawCard(ctx, offsetX, offsetY, qrImage) {
       const cardWidth = 1004;
       const cardHeight = 650;
@@ -266,15 +274,41 @@ const app = createApp({
       ctx.lineWidth = 1;
       ctx.strokeRect(offsetX, offsetY, cardWidth, cardHeight);
 
-      // Texte (nom)
+      // Texte (nom) avec ajustement
+      const fontSize = this.calculateFontSize(this.cardData.name);
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 100px Calibri, Arial, sans-serif';
+      ctx.font = `bold ${fontSize}px Calibri, Arial, sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(
-        this.cardData.name,
-        offsetX + cardWidth / 2,
-        offsetY + marginTop + 80
-      );
+      
+      // Vérifie si le texte rentre sur 1 ligne
+      const maxWidth = cardWidth - (marginLeft + marginRight);
+      const metrics = ctx.measureText(this.cardData.name);
+      
+      if (metrics.width <= maxWidth) {
+        // 1 seule ligne
+        ctx.fillText(
+          this.cardData.name,
+          offsetX + cardWidth / 2,
+          offsetY + marginTop + 80
+        );
+      } else {
+        // Texte sur 2 lignes
+        const words = this.cardData.name.split(' ');
+        const mid = Math.ceil(words.length / 2);
+        const line1 = words.slice(0, mid).join(' ');
+        const line2 = words.slice(mid).join(' ');
+        
+        // Réduit la police pour 2 lignes
+        const smallerFontSize = Math.max(30, fontSize - 15);
+        ctx.font = `bold ${smallerFontSize}px Calibri, Arial, sans-serif`;
+        
+        const lineHeight = smallerFontSize * 1.3;
+        const totalHeight = lineHeight * 2;
+        const startY = offsetY + marginTop + 80 - totalHeight / 2;
+        
+        ctx.fillText(line1, offsetX + cardWidth / 2, startY);
+        ctx.fillText(line2, offsetX + cardWidth / 2, startY + lineHeight);
+      }
 
       // Ligne accent
       ctx.strokeStyle = '#c8c8c8';
