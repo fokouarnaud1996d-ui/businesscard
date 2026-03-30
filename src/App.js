@@ -189,12 +189,15 @@ const app = createApp({
       const cardHeight = 650;
       const spacing = 40;
 
+      // Pré-génère le QR code une fois
+      const qrImage = await this.generateQRImage(220);
+
       // Génère les cartes
       for (let row = 0; row < format.rows; row++) {
         for (let col = 0; col < format.cols; col++) {
           const x = col * (cardWidth + spacing);
           const y = row * (cardHeight + spacing);
-          this.drawCard(ctx, x, y);
+          this.drawCard(ctx, x, y, qrImage);
         }
       }
 
@@ -203,7 +206,48 @@ const app = createApp({
       setTimeout(() => { this.successMessage = ''; }, 3000);
     },
 
-    drawCard(ctx, offsetX, offsetY) {
+    generateQRImage(size) {
+      return new Promise((resolve, reject) => {
+        try {
+          const tempDiv = document.createElement('div');
+          tempDiv.style.display = 'none';
+          document.body.appendChild(tempDiv);
+
+          const qr = new QRCode(tempDiv, {
+            text: this.cardData.qrUrl,
+            width: size,
+            height: size,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
+
+          setTimeout(() => {
+            try {
+              const img = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+              if (img) {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const c = canvas.getContext('2d');
+                c.drawImage(img, 0, 0);
+                document.body.removeChild(tempDiv);
+                resolve(canvas);
+              } else {
+                throw new Error('QR image not found');
+              }
+            } catch (e) {
+              document.body.removeChild(tempDiv);
+              reject(e);
+            }
+          }, 200);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    },
+
+    drawCard(ctx, offsetX, offsetY, qrImage) {
       const cardWidth = 1004;
       const cardHeight = 650;
       const marginTop = 80;
@@ -233,34 +277,13 @@ const app = createApp({
       ctx.lineTo(offsetX + cardWidth - marginRight, offsetY + marginTop + 140);
       ctx.stroke();
 
-      // QR Code (placeholder)
+      // QR Code
       const qrSize = 220;
       const qrX = offsetX + cardWidth - marginRight - qrSize;
       const qrY = offsetY + cardHeight - 80 - qrSize;
       
-      // Générer et placer le QR code
-      this.drawQRCode(ctx, qrX, qrY, qrSize);
-    },
-
-    drawQRCode(ctx, x, y, size) {
-      // Utilise QRCode.js pour générer le QR
-      const qr = new QRCode({
-        text: this.cardData.qrUrl,
-        width: size,
-        height: size,
-        colorDark: '#000000',
-        colorLight: '#ffffff'
-      });
-
-      // Récupère l'image du QR
-      const img = qr._el.querySelector('img');
-      if (img) {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = size;
-        tempCanvas.height = size;
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(img, 0, 0);
-        ctx.drawImage(tempCanvas, x, y);
+      if (qrImage) {
+        ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
       }
     },
 
