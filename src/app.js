@@ -28,7 +28,7 @@ const app = createApp({
                 <label class="block text-sm font-medium text-slate-700 mb-2">Nom complet</label>
                 <input 
                   v-model="cardData.name" 
-                  @input="saveToLocalStorage"
+                  @input="handleInput"
                   type="text" 
                   placeholder="ex: FUKUANO"
                   class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -40,7 +40,7 @@ const app = createApp({
                 <label class="block text-sm font-medium text-slate-700 mb-2">URL pour QR Code</label>
                 <input 
                   v-model="cardData.qrUrl" 
-                  @input="saveToLocalStorage"
+                  @input="handleInput"
                   type="url" 
                   placeholder="https://ton-site.com"
                   class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -52,7 +52,7 @@ const app = createApp({
                 <label class="block text-sm font-medium text-slate-700 mb-2">Format</label>
                 <select 
                   v-model="cardData.format" 
-                  @change="saveToLocalStorage"
+                  @change="handleInput"
                   class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="single">1 Carte (85×55mm)</option>
@@ -62,14 +62,8 @@ const app = createApp({
                 </select>
               </div>
 
-              <!-- Boutons -->
-              <div class="pt-4 space-y-2">
-                <button 
-                  @click="generateImage"
-                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition"
-                >
-                  🎨 Générer
-                </button>
+              <!-- Bouton Exporter -->
+              <div class="pt-4">
                 <button 
                   @click="downloadImage"
                   class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition"
@@ -127,6 +121,14 @@ const app = createApp({
     };
   },
 
+  mounted() {
+    this.loadFromLocalStorage();
+    // Génère automatiquement au démarrage
+    this.$nextTick(() => {
+      this.generateImage();
+    });
+  },
+
   computed: {
     previewStyle() {
       const formatDimensions = {
@@ -153,6 +155,11 @@ const app = createApp({
   },
 
   methods: {
+    handleInput() {
+      this.saveToLocalStorage();
+      this.generateImage();
+    },
+
     saveToLocalStorage() {
       localStorage.setItem('cardData', JSON.stringify(this.cardData));
     },
