@@ -1,513 +1,290 @@
-export default {
-    template: `
-        <div class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-            <!-- Header -->
-            <header class="bg-white shadow-sm sticky top-0 z-40">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900">🎴 Business Card Generator</h1>
-                            <p class="text-sm text-gray-600">Cartes de visite professionnelles en quelques clics</p>
-                        </div>
-                        <div class="text-right text-sm text-gray-600">
-                            <p>v1.0 · <a href="https://github.com/fokouarnaud1996d-ui/businesscard" class="text-blue-600 hover:underline">GitHub</a></p>
-                        </div>
-                    </div>
-                </div>
-            </header>
+/**
+ * Application Vue 3 - Générateur de Cartes de Visite
+ * Utilise Vue 3 avec API Global (compatible CDN)
+ */
 
-            <!-- Main Content -->
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Panel Contrôle (Gauche) -->
-                    <div class="lg:col-span-1">
-                        <div class="bg-white rounded-lg shadow-lg p-6">
-                            <h2 class="text-xl font-bold text-gray-900 mb-6">⚙️ Configuration</h2>
-                            
-                            <!-- Mode de génération -->
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
-                                <select v-model="formData.mode" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="single">Carte unique (85×55mm)</option>
-                                    <option value="planche_2x2">Planche 2×2 (4 cartes)</option>
-                                    <option value="planche_3x3">Planche 3×3 (9 cartes)</option>
-                                    <option value="planche_4x3">Planche 4×3 (12 cartes)</option>
-                                </select>
-                            </div>
+const { createApp } = Vue;
 
-                            <!-- Informations -->
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom*</label>
-                                <input 
-                                    v-model="formData.cardName" 
-                                    type="text" 
-                                    placeholder="Ex: FUKUANO"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    @input="updatePreview"
-                                >
-                                <p class="text-xs text-gray-500 mt-1">{{ formData.cardName.length }} caractères</p>
-                            </div>
-
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">URL QR*</label>
-                                <input 
-                                    v-model="formData.qrUrl" 
-                                    type="url" 
-                                    placeholder="https://example.com"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    @input="updatePreview"
-                                >
-                            </div>
-
-                            <!-- Personnalisation avancée -->
-                            <details class="mb-6">
-                                <summary class="cursor-pointer font-medium text-gray-700 mb-3">🎨 Personnalisation avancée</summary>
-                                
-                                <div class="mt-4 space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur fond</label>
-                                        <div class="flex gap-2 items-center">
-                                            <input 
-                                                v-model="formData.bgColor" 
-                                                type="color" 
-                                                class="h-10 w-16 cursor-pointer rounded border border-gray-300"
-                                                @input="updatePreview"
-                                            >
-                                            <input 
-                                                v-model="formData.bgColor" 
-                                                type="text" 
-                                                placeholder="#FFFFFF"
-                                                class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm font-mono"
-                                                @input="updatePreview"
-                                            >
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur texte</label>
-                                        <div class="flex gap-2 items-center">
-                                            <input 
-                                                v-model="formData.textColor" 
-                                                type="color" 
-                                                class="h-10 w-16 cursor-pointer rounded border border-gray-300"
-                                                @input="updatePreview"
-                                            >
-                                            <input 
-                                                v-model="formData.textColor" 
-                                                type="text" 
-                                                placeholder="#000000"
-                                                class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm font-mono"
-                                                @input="updatePreview"
-                                            >
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur accent (ligne)</label>
-                                        <div class="flex gap-2 items-center">
-                                            <input 
-                                                v-model="formData.accentColor" 
-                                                type="color" 
-                                                class="h-10 w-16 cursor-pointer rounded border border-gray-300"
-                                                @input="updatePreview"
-                                            >
-                                            <input 
-                                                v-model="formData.accentColor" 
-                                                type="text" 
-                                                placeholder="#C8C8C8"
-                                                class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm font-mono"
-                                                @input="updatePreview"
-                                            >
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <!-- Boutons d'action -->
-                            <div class="space-y-3">
-                                <button 
-                                    @click="generateCard"
-                                    :disabled="!formData.cardName || !formData.qrUrl"
-                                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
-                                >
-                                    ✨ Générer
-                                </button>
-                                <button 
-                                    @click="resetForm"
-                                    class="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition"
-                                >
-                                    🔄 Réinitialiser
-                                </button>
-                                <button 
-                                    @click="downloadCard"
-                                    :disabled="!cardGenerated"
-                                    class="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
-                                >
-                                    💾 Télécharger PNG
-                                </button>
-                            </div>
-
-                            <!-- Info messages -->
-                            <div v-if="statusMessage" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                                {{ statusMessage }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Prévisualisation (Droite) -->
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-lg shadow-lg p-8">
-                            <h2 class="text-xl font-bold text-gray-900 mb-6">👁️ Prévisualisation</h2>
-                            
-                            <!-- Mode affichage -->
-                            <div class="mb-6 flex gap-2">
-                                <button 
-                                    v-for="mode in ['single', 'fit', 'full']"
-                                    :key="mode"
-                                    @click="previewMode = mode"
-                                    :class="previewMode === mode ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-4 py-2 rounded font-medium transition"
-                                >
-                                    {{ mode === 'single' ? '📄 Carte' : mode === 'fit' ? '📋 Adapter' : '🖥️ 100%' }}
-                                </button>
-                            </div>
-
-                            <!-- Canvas de génération (caché) -->
-                            <canvas 
-                                ref="canvas" 
-                                style="display: none;"
-                            ></canvas>
-
-                            <!-- Zone de prévisualisation -->
-                            <div 
-                                v-if="cardGenerated"
-                                class="flex justify-center items-center bg-gray-100 rounded p-4 min-h-96"
-                                :style="{
-                                    transform: previewMode === 'fit' ? 'scale(0.5)' : previewMode === 'single' ? 'scale(0.35)' : 'scale(1)',
-                                    transformOrigin: 'top center'
-                                }"
-                            >
-                                <canvas 
-                                    ref="previewCanvas" 
-                                    class="border border-gray-300"
-                                ></canvas>
-                            </div>
-                            <div v-else class="flex flex-col justify-center items-center bg-gray-100 rounded p-16 min-h-96">
-                                <p class="text-gray-500 text-lg">Remplissez le formulaire et cliquez sur "Générer"</p>
-                            </div>
-                        </div>
-
-                        <!-- Infos -->
-                        <div class="mt-6 bg-white rounded-lg shadow-lg p-6">
-                            <h3 class="font-bold text-gray-900 mb-2">📋 Informations</h3>
-                            <ul class="text-sm text-gray-600 space-y-1">
-                                <li>✓ Format: 85×55mm (300 DPI)</li>
-                                <li>✓ Résolution: 1004×650 px</li>
-                                <li>✓ Export: PNG haute qualité</li>
-                                <li v-if="formData.cardName.length > 25" class="text-orange-600">⚠️ Nom long détecté (taille auto-ajustée)</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <!-- Footer -->
-            <footer class="mt-16 bg-white border-t border-gray-200">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-gray-600">
-                    <p>Créé avec ❤️ · <a href="https://github.com/fokouarnaud1996d-ui/businesscard" class="text-blue-600 hover:underline">Source Code</a> · 
-                    <a href="./CONCEPTION.md" class="text-blue-600 hover:underline">Documentation</a></p>
-                </div>
-            </footer>
+const app = createApp({
+  template: `
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+      <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+          <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-2">
+            💳 Générateur de Cartes de Visite
+          </h1>
+          <p class="text-slate-600 text-lg">Créez vos cartes professionnelles en quelques clics</p>
         </div>
-    `,
 
-    data() {
-        return {
-            formData: {
-                cardName: 'FUKUANO',
-                qrUrl: 'https://example.com',
-                mode: 'single',
-                bgColor: '#FFFFFF',
-                textColor: '#000000',
-                accentColor: '#C8C8C8'
-            },
-            cardGenerated: false,
-            statusMessage: '',
-            previewMode: 'fit',
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Left: Formulaire -->
+          <div class="bg-white rounded-xl shadow-lg p-6 h-fit">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Paramètres</h2>
             
-            // Constantes
-            CARD_WIDTH: 1004,
-            CARD_HEIGHT: 650,
-            DPI: 300,
-            MARGIN_TOP: 80,
-            MARGIN_BOTTOM: 80,
-            MARGIN_LEFT: 60,
-            MARGIN_RIGHT: 60,
-            SPACING: 40,
+            <div class="space-y-4">
+              <!-- Nom -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Nom complet</label>
+                <input 
+                  v-model="cardData.name" 
+                  @input="saveToLocalStorage"
+                  type="text" 
+                  placeholder="ex: FUKUANO"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- URL QR -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">URL pour QR Code</label>
+                <input 
+                  v-model="cardData.qrUrl" 
+                  @input="saveToLocalStorage"
+                  type="url" 
+                  placeholder="https://ton-site.com"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <!-- Format -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Format</label>
+                <select 
+                  v-model="cardData.format" 
+                  @change="saveToLocalStorage"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="single">1 Carte (85×55mm)</option>
+                  <option value="2x2">Planche 2×2 (4 cartes)</option>
+                  <option value="3x3">Planche 3×3 (9 cartes)</option>
+                  <option value="4x3">Planche 4×3 (12 cartes)</option>
+                </select>
+              </div>
+
+              <!-- Boutons -->
+              <div class="pt-4 space-y-2">
+                <button 
+                  @click="generateImage"
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition"
+                >
+                  🎨 Générer
+                </button>
+                <button 
+                  @click="downloadImage"
+                  class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition"
+                >
+                  📥 Exporter PNG
+                </button>
+              </div>
+
+              <!-- Info -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                <p><strong>💡 Conseil :</strong> Vos données sont sauvegardées localement. N'hésitez pas à les réutiliser !</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Prévisualisation -->
+          <div class="bg-white rounded-xl shadow-lg p-6 h-fit">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Prévisualisation</h2>
             
-            // Nouvelles données
-            qrInstance: null,
-            STORAGE_KEY: 'businesscard_data'
-        }
+            <div class="bg-slate-100 rounded-lg p-4 mb-4 flex items-center justify-center min-h-[400px]">
+              <div 
+                ref="previewContainer"
+                class="bg-white"
+                :style="previewStyle"
+              >
+                <canvas ref="canvas" class="w-full"></canvas>
+              </div>
+            </div>
+
+            <div class="text-sm text-slate-600 space-y-1">
+              <p><strong>Dimensions :</strong> {{ previewDimensions }}</p>
+              <p><strong>Résolution :</strong> 300 DPI (prête imprimeur)</p>
+              <p><strong>Format :</strong> PNG</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Message -->
+        <div v-if="successMessage" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          {{ successMessage }}
+        </div>
+      </div>
+    </div>
+  `,
+
+  data() {
+    return {
+      cardData: {
+        name: 'FUKUANO',
+        qrUrl: 'https://ton-site-carrd.com',
+        format: 'single'
+      },
+      successMessage: '',
+      canvas: null
+    };
+  },
+
+  computed: {
+    previewStyle() {
+      const formatDimensions = {
+        single: { width: '200px', height: '130px' },
+        '2x2': { width: '400px', height: '260px' },
+        '3x3': { width: '600px', height: '390px' },
+        '4x3': { width: '800px', height: '390px' }
+      };
+      return {
+        ...formatDimensions[this.cardData.format],
+        border: '1px solid #e5e7eb'
+      };
     },
 
-    mounted() {
-        // Charge les données sauvegardées au démarrage
-        this.loadFromStorage()
-    },
-
-    watch: {
-        formData: {
-            handler(newData) {
-                this.saveToStorage()
-            },
-            deep: true
-        }
-    },
-
-    methods: {
-        // 💾 localStorage - Sauvegarde
-        saveToStorage() {
-            try {
-                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.formData))
-            } catch (e) {
-                console.warn('localStorage non disponible:', e)
-            }
-        },
-
-        // 📥 localStorage - Chargement
-        loadFromStorage() {
-            try {
-                const saved = localStorage.getItem(this.STORAGE_KEY)
-                if (saved) {
-                    this.formData = JSON.parse(saved)
-                    this.statusMessage = '✅ Données restaurées depuis le cache'
-                }
-            } catch (e) {
-                console.warn('Erreur lors du chargement:', e)
-            }
-        },
-
-        updatePreview() {
-            this.statusMessage = `Nom: ${this.formData.cardName} (${this.formData.cardName.length} chars)` 
-        },
-
-        calculateOptimalFontSize(name) {
-            const len = name.length
-            if (len <= 10) return { size: 100, status: '✓ Nom court (taille optimale)' }
-            if (len <= 20) return { size: 70, status: '⚠️ Nom moyen (taille réduite à 70pt)' }
-            if (len <= 35) return { size: 50, status: '⚠️⚠️ Nom long (taille réduite à 50pt)' }
-            return { size: 40, status: '❌ Nom très long (40pt) - Considérez 2 cartes' }
-        },
-
-        generateCard() {
-            try {
-                const canvas = this.$refs.canvas
-                if (!canvas) {
-                    console.error('Canvas ref not found')
-                    return
-                }
-
-                const ctx = canvas.getContext('2d')
-                
-                // Détermine les dimensions en fonction du mode
-                const dims = this.getModeDimensions()
-                canvas.width = dims.width
-                canvas.height = dims.height
-
-                // Remplit le canvas avec la couleur de fond
-                ctx.fillStyle = this.formData.bgColor
-                ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-                // Génère la(les) carte(s)
-                if (this.formData.mode === 'single') {
-                    this.drawCard(ctx, 0, 0, this.formData.cardName)
-                } else {
-                    const layout = this.getLayoutDimensions()
-                    for (let row = 0; row < layout.rows; row++) {
-                        for (let col = 0; col < layout.cols; col++) {
-                            const x = col * (this.CARD_WIDTH + this.SPACING)
-                            const y = row * (this.CARD_HEIGHT + this.SPACING)
-                            this.drawCard(ctx, x, y, this.formData.cardName)
-                        }
-                    }
-                }
-
-                // Copie vers canvas de preview
-                const previewCanvas = this.$refs.previewCanvas
-                previewCanvas.width = canvas.width
-                previewCanvas.height = canvas.height
-                const previewCtx = previewCanvas.getContext('2d')
-                previewCtx.drawImage(canvas, 0, 0)
-
-                this.cardGenerated = true
-                const { status } = this.calculateOptimalFontSize(this.formData.cardName)
-                this.statusMessage = `✅ Carte générée! ${status}`
-
-            } catch (error) {
-                console.error('Error generating card:', error)
-                this.statusMessage = `❌ Erreur: ${error.message}`
-            }
-        },
-
-        drawCard(ctx, x, y, name) {
-            // Fond de la carte
-            ctx.fillStyle = this.formData.bgColor
-            ctx.fillRect(x, y, this.CARD_WIDTH, this.CARD_HEIGHT)
-
-            // Texte
-            const { size } = this.calculateOptimalFontSize(name)
-            ctx.font = `${size}px "Segoe UI", sans-serif`
-            ctx.fillStyle = this.formData.textColor
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'top'
-            
-            const textX = x + this.CARD_WIDTH / 2
-            const textY = y + this.MARGIN_TOP
-            ctx.fillText(name, textX, textY)
-
-            // Ligne accent
-            const lineY = y + this.MARGIN_TOP + 140
-            ctx.strokeStyle = this.formData.accentColor
-            ctx.lineWidth = 2
-            ctx.beginPath()
-            ctx.moveTo(x + this.MARGIN_LEFT, lineY)
-            ctx.lineTo(x + this.CARD_WIDTH - this.MARGIN_RIGHT, lineY)
-            ctx.stroke()
-
-            // QR Code (placeholder - sera généré après)
-            this.drawQRCode(ctx, x + this.CARD_WIDTH - this.MARGIN_RIGHT - 220, y + this.CARD_HEIGHT - this.MARGIN_BOTTOM - 220)
-        },
-
-        drawQRCode(ctx, x, y) {
-            /**
-             * Génère un vrai QR code avec qrcode.js
-             * Fallback sur placeholder si la lib n'est pas dispo
-             */
-            const size = 220
-            
-            try {
-                // Si QRCode est disponible globalement
-                if (typeof QRCode !== 'undefined') {
-                    const tempCanvas = document.createElement('canvas')
-                    const qr = new QRCode({
-                        text: this.formData.qrUrl,
-                        width: size,
-                        height: size,
-                        colorDark: '#000000',
-                        colorLight: '#FFFFFF',
-                        correctLevel: QRCode.CorrectLevel.H
-                    })
-                    
-                    // Obtient le canvas du QR généré
-                    if (qr._canvas) {
-                        ctx.drawImage(qr._canvas, x, y)
-                        return
-                    }
-                }
-            } catch (e) {
-                console.warn('QRCode error, using placeholder:', e)
-            }
-            
-            // Fallback: placeholder QR code
-            this.drawQRCodePlaceholder(ctx, x, y)
-        },
-
-        drawQRCodePlaceholder(ctx, x, y) {
-            /**
-             * Génère un QR code visuel basique si la lib n'est pas disponible
-             */
-            const size = 220
-            
-            // Fond blanc
-            ctx.fillStyle = '#FFFFFF'
-            ctx.fillRect(x, y, size, size)
-            
-            // Border noir
-            ctx.strokeStyle = '#000000'
-            ctx.lineWidth = 3
-            ctx.strokeRect(x, y, size, size)
-            
-            // Pattern QR-like (3 carrés de positionnement)
-            const drawPositioningMarker = (px, py) => {
-                const markerSize = 50
-                // Carré extérieur
-                ctx.fillStyle = '#000000'
-                ctx.fillRect(px, py, markerSize, markerSize)
-                // Carré intérieur blanc
-                ctx.fillStyle = '#FFFFFF'
-                ctx.fillRect(px + 10, py + 10, markerSize - 20, markerSize - 20)
-                // Carré intérieur noir
-                ctx.fillStyle = '#000000'
-                ctx.fillRect(px + 15, py + 15, markerSize - 30, markerSize - 30)
-            }
-            
-            // Positionnement markers aux 3 coins
-            drawPositioningMarker(x + 5, y + 5)
-            drawPositioningMarker(x + size - 55, y + 5)
-            drawPositioningMarker(x + 5, y + size - 55)
-            
-            // Bordure de timing
-            ctx.strokeStyle = '#000000'
-            ctx.lineWidth = 1
-            for (let i = 0; i < 17; i++) {
-                if (i % 2 === 0) {
-                    ctx.strokeRect(x + 55 + i * 8, y + 55, 4, 4)
-                }
-            }
-            
-            // Texte
-            ctx.font = '10px Arial'
-            ctx.fillStyle = '#999999'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText('QR Generated', x + size/2, y + size - 15)
-        },
-
-        getModeDimensions() {
-            const layout = this.getLayoutDimensions()
-            const spacing = layout.cols > 1 ? this.SPACING * (layout.cols - 1) : 0
-            const spacingV = layout.rows > 1 ? this.SPACING * (layout.rows - 1) : 0
-            
-            return {
-                width: (this.CARD_WIDTH * layout.cols) + spacing,
-                height: (this.CARD_HEIGHT * layout.rows) + spacingV
-            }
-        },
-
-        getLayoutDimensions() {
-            const layouts = {
-                'single': { rows: 1, cols: 1 },
-                'planche_2x2': { rows: 2, cols: 2 },
-                'planche_3x3': { rows: 3, cols: 3 },
-                'planche_4x3': { rows: 3, cols: 4 }
-            }
-            return layouts[this.formData.mode] || layouts.single
-        },
-
-        downloadCard() {
-            const canvas = this.$refs.canvas
-            if (!canvas) return
-
-            const link = document.createElement('a')
-            link.href = canvas.toDataURL('image/png')
-            link.download = `businesscard_${this.formData.cardName.replace(/\s+/g, '_')}.png`
-            link.click()
-
-            this.statusMessage = '✅ Téléchargement en cours...'
-        },
-
-        resetForm() {
-            this.formData = {
-                cardName: '',
-                qrUrl: '',
-                mode: 'single',
-                bgColor: '#FFFFFF',
-                textColor: '#000000',
-                accentColor: '#C8C8C8'
-            }
-            this.cardGenerated = false
-            this.statusMessage = ''
-        }
+    previewDimensions() {
+      const dimensions = {
+        single: '85×55mm (1004×650px)',
+        '2x2': '170×110mm (2048×1300px)',
+        '3x3': '255×165mm (3052×1950px)',
+        '4x3': '340×165mm (4056×1950px)'
+      };
+      return dimensions[this.cardData.format];
     }
-}
+  },
+
+  methods: {
+    saveToLocalStorage() {
+      localStorage.setItem('cardData', JSON.stringify(this.cardData));
+    },
+
+    loadFromLocalStorage() {
+      const saved = localStorage.getItem('cardData');
+      if (saved) {
+        this.cardData = JSON.parse(saved);
+      }
+    },
+
+    async generateImage() {
+      this.canvas = this.$refs.canvas;
+      const ctx = this.canvas.getContext('2d');
+      
+      // Dimensions selon le format
+      const formats = {
+        single: { width: 1004, height: 650, cols: 1, rows: 1 },
+        '2x2': { width: 2048, height: 1300, cols: 2, rows: 2 },
+        '3x3': { width: 3052, height: 1950, cols: 3, rows: 3 },
+        '4x3': { width: 4056, height: 1950, cols: 4, rows: 3 }
+      };
+
+      const format = formats[this.cardData.format];
+      this.canvas.width = format.width;
+      this.canvas.height = format.height;
+
+      // Fond blanc
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, format.width, format.height);
+
+      // Dimensions d'une carte
+      const cardWidth = 1004;
+      const cardHeight = 650;
+      const spacing = 40;
+
+      // Génère les cartes
+      for (let row = 0; row < format.rows; row++) {
+        for (let col = 0; col < format.cols; col++) {
+          const x = col * (cardWidth + spacing);
+          const y = row * (cardHeight + spacing);
+          this.drawCard(ctx, x, y);
+        }
+      }
+
+      // Message de succès
+      this.successMessage = '✅ Carte générée !';
+      setTimeout(() => { this.successMessage = ''; }, 3000);
+    },
+
+    drawCard(ctx, offsetX, offsetY) {
+      const cardWidth = 1004;
+      const cardHeight = 650;
+      const marginTop = 80;
+      const marginLeft = 60;
+      const marginRight = 60;
+
+      // Bordure (optionnel)
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(offsetX, offsetY, cardWidth, cardHeight);
+
+      // Texte (nom)
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 100px Calibri, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        this.cardData.name,
+        offsetX + cardWidth / 2,
+        offsetY + marginTop + 80
+      );
+
+      // Ligne accent
+      ctx.strokeStyle = '#c8c8c8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(offsetX + marginLeft, offsetY + marginTop + 140);
+      ctx.lineTo(offsetX + cardWidth - marginRight, offsetY + marginTop + 140);
+      ctx.stroke();
+
+      // QR Code (placeholder)
+      const qrSize = 220;
+      const qrX = offsetX + cardWidth - marginRight - qrSize;
+      const qrY = offsetY + cardHeight - 80 - qrSize;
+      
+      // Générer et placer le QR code
+      this.drawQRCode(ctx, qrX, qrY, qrSize);
+    },
+
+    drawQRCode(ctx, x, y, size) {
+      // Utilise QRCode.js pour générer le QR
+      const qr = new QRCode({
+        text: this.cardData.qrUrl,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff'
+      });
+
+      // Récupère l'image du QR
+      const img = qr._el.querySelector('img');
+      if (img) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = size;
+        tempCanvas.height = size;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(img, 0, 0);
+        ctx.drawImage(tempCanvas, x, y);
+      }
+    },
+
+    async downloadImage() {
+      if (!this.canvas || this.canvas.width === 0) {
+        alert('Veuillez d\'abord générer la carte');
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = this.canvas.toDataURL('image/png');
+      link.download = `carte_visite_${this.cardData.name.replace(/\s+/g, '_')}.png`;
+      link.click();
+
+      this.successMessage = '📥 PNG téléchargé !';
+      setTimeout(() => { this.successMessage = ''; }, 3000);
+    }
+  },
+
+  mounted() {
+    this.loadFromLocalStorage();
+    this.generateImage();
+  }
+});
+
+// Monte l'app
+app.mount('#app');
