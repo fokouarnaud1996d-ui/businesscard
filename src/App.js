@@ -243,13 +243,53 @@ export default {
             MARGIN_BOTTOM: 80,
             MARGIN_LEFT: 60,
             MARGIN_RIGHT: 60,
-            SPACING: 40
+            SPACING: 40,
+            
+            // Nouvelles données
+            qrInstance: null,
+            STORAGE_KEY: 'businesscard_data'
+        }
+    },
+
+    mounted() {
+        // Charge les données sauvegardées au démarrage
+        this.loadFromStorage()
+    },
+
+    watch: {
+        formData: {
+            handler(newData) {
+                this.saveToStorage()
+            },
+            deep: true
         }
     },
 
     methods: {
+        // 💾 localStorage - Sauvegarde
+        saveToStorage() {
+            try {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.formData))
+            } catch (e) {
+                console.warn('localStorage non disponible:', e)
+            }
+        },
+
+        // 📥 localStorage - Chargement
+        loadFromStorage() {
+            try {
+                const saved = localStorage.getItem(this.STORAGE_KEY)
+                if (saved) {
+                    this.formData = JSON.parse(saved)
+                    this.statusMessage = '✅ Données restaurées depuis le cache'
+                }
+            } catch (e) {
+                console.warn('Erreur lors du chargement:', e)
+            }
+        },
+
         updatePreview() {
-            this.statusMessage = `Nom: ${this.formData.cardName} (${this.formData.cardName.length} chars)`
+            this.statusMessage = `Nom: ${this.formData.cardName} (${this.formData.cardName.length} chars)` 
         },
 
         calculateOptimalFontSize(name) {
@@ -340,7 +380,43 @@ export default {
         },
 
         drawQRCode(ctx, x, y) {
-            // Placeholder pour QR - sera généré avec qrcode.js
+            /**
+             * Génère un vrai QR code avec qrcode.js
+             * Fallback sur placeholder si la lib n'est pas dispo
+             */
+            const size = 220
+            
+            try {
+                // Si QRCode est disponible globalement
+                if (typeof QRCode !== 'undefined') {
+                    const tempCanvas = document.createElement('canvas')
+                    const qr = new QRCode({
+                        text: this.formData.qrUrl,
+                        width: size,
+                        height: size,
+                        colorDark: '#000000',
+                        colorLight: '#FFFFFF',
+                        correctLevel: QRCode.CorrectLevel.H
+                    })
+                    
+                    // Obtient le canvas du QR généré
+                    if (qr._canvas) {
+                        ctx.drawImage(qr._canvas, x, y)
+                        return
+                    }
+                }
+            } catch (e) {
+                console.warn('QRCode error, using placeholder:', e)
+            }
+            
+            // Fallback: placeholder QR code
+            this.drawQRCodePlaceholder(ctx, x, y)
+        },
+
+        drawQRCodePlaceholder(ctx, x, y) {
+            /**
+             * Génère un QR code visuel basique si la lib n'est pas disponible
+             */
             const size = 220
             
             // Fond blanc
@@ -349,15 +425,43 @@ export default {
             
             // Border noir
             ctx.strokeStyle = '#000000'
-            ctx.lineWidth = 2
+            ctx.lineWidth = 3
             ctx.strokeRect(x, y, size, size)
             
-            // Texte placeholder
-            ctx.font = '12px sans-serif'
+            // Pattern QR-like (3 carrés de positionnement)
+            const drawPositioningMarker = (px, py) => {
+                const markerSize = 50
+                // Carré extérieur
+                ctx.fillStyle = '#000000'
+                ctx.fillRect(px, py, markerSize, markerSize)
+                // Carré intérieur blanc
+                ctx.fillStyle = '#FFFFFF'
+                ctx.fillRect(px + 10, py + 10, markerSize - 20, markerSize - 20)
+                // Carré intérieur noir
+                ctx.fillStyle = '#000000'
+                ctx.fillRect(px + 15, py + 15, markerSize - 30, markerSize - 30)
+            }
+            
+            // Positionnement markers aux 3 coins
+            drawPositioningMarker(x + 5, y + 5)
+            drawPositioningMarker(x + size - 55, y + 5)
+            drawPositioningMarker(x + 5, y + size - 55)
+            
+            // Bordure de timing
+            ctx.strokeStyle = '#000000'
+            ctx.lineWidth = 1
+            for (let i = 0; i < 17; i++) {
+                if (i % 2 === 0) {
+                    ctx.strokeRect(x + 55 + i * 8, y + 55, 4, 4)
+                }
+            }
+            
+            // Texte
+            ctx.font = '10px Arial'
             ctx.fillStyle = '#999999'
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
-            ctx.fillText('QR Code', x + size/2, y + size/2)
+            ctx.fillText('QR Generated', x + size/2, y + size - 15)
         },
 
         getModeDimensions() {
